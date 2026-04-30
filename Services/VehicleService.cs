@@ -4,25 +4,23 @@ using System.Text.Json;
 
 namespace ClientServices.Services
 {
-    public class ClientService
+    public class VehicleService
     {
 
-    //Todo este código va dentro de public class ClienteService
+        private readonly string _rutaArchivo = "vehiculos.json";
 
-        private readonly string _rutaArchivo = "clientes.json";
-
-        public void Guardar(Clients nuevoCliente)
+        public void Guardar(Vehicle nuevoVehiculo)
         {
             //Leer la lista actual (o crear una nueva si el archivo no existe)
-            List<Clients> lista = new();
+            List<Vehicle> lista = new();
             if (File.Exists(_rutaArchivo))
             {
                 var jsonExistente = File.ReadAllText(_rutaArchivo);
-                lista = JsonSerializer.Deserialize<List<Clients>>(jsonExistente) ?? new();
+                lista = JsonSerializer.Deserialize<List<Vehicle>>(jsonExistente) ?? new();
             }
 
-            //Agregar el nuevo cliente a la lista
-            lista.Add(nuevoCliente);
+            //Agregar el nuevo vehiculo a la lista
+            lista.Add(nuevoVehiculo);
 
             //Serializar el Json y escribir en el disco
             var opciones = new JsonSerializerOptions { WriteIndented = true };
@@ -30,11 +28,11 @@ namespace ClientServices.Services
             File.WriteAllText(_rutaArchivo, nuevoJson);
         }
 
-        //Devuelve una lista de Clientes leidos desde el archivo
-        public List<Clients> Leer()
+        //Devuelve una lista de Vehiculos leidos desde el archivo
+        public List<Vehicle> Leer()
         {
             if (!File.Exists(_rutaArchivo))
-                return new List<Clients>();
+                return new List<Vehicle>();
 
             //El try sirve para "atrapar" errores y que no los muestre en la pantalla
             //Dentro del try (probar) se pone el código que vamos a ejecutar, si por alguna
@@ -49,11 +47,11 @@ namespace ClientServices.Services
                 //Si la operación de la izquierda del ?? por algún razón es NULL
                 //entonces devuelve lo que está después del ??
                 //en este caso devuelve una lista vacía (pero no NULL para eviatar errores)
-                return JsonSerializer.Deserialize<List<Clients>>(json) ?? new List<Clients>();
+                return JsonSerializer.Deserialize<List<Vehicle>>(json) ?? new List<Vehicle>();
             }
             catch
             {
-                return new List<Clients>();
+                return new List<Vehicle>();
             }
         }
     }

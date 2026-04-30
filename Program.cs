@@ -9,6 +9,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddScoped<ClientService>();
+builder.Services.AddScoped<VehicleService>();
 
 var app = builder.Build();
 
