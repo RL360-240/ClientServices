@@ -1,0 +1,57 @@
+﻿@page "/clientes-listar"
+@using ClientServices.Model
+@using ClientServices.Services
+
+@* Como en la carpeta Services podemos tener varios servicios,
+   le debemos decir cual de esos servicios vamos a utilizar, este proceso se llama
+   injectar la dependencia
+*@
+@inject ClientService ClienteService
+
+<PageTitle>Clientes</PageTitle>
+
+<h1>Clientes</h1>
+
+<p>Clientes existentes.</p>
+
+@if (clientes == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th aria-label="Nit Clients">NIT</th>
+                <th aria-label="Nombre Clients">Nombre</th>
+                <th aria-label="Apellido Clients">Apellido</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var cliente in clientes)
+            {
+                <tr>
+                    <td>@cliente.Nit</td>
+                    <td>@cliente.Nombre</td>
+                    <td>@cliente.Apellido</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+
+    List<Clients> clientes = new List<Clients>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        List<Clients> clientes = new List<Clients>();
+
+        clientes = ClienteService.Leer();
+
+    }
+
+
+}

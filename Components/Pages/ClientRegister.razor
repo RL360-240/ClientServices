@@ -1,0 +1,117 @@
+﻿@page "/clientes-ingreso"
+
+@using ClientServices.Model
+@using ClientServices.Services
+
+@inject ClientService ClienteService
+
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+
+<h3>Registrar Nuevo Cliente</h3>
+
+<EditForm Model="@NuevoCliente" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary class="text-danger" />
+
+    <div class="container text-center">
+        <div class="row">
+            <div class="col">
+                <div class="form-group mb-3">
+                    <label for="nit">NIT:</label>
+                    <InputText id="nit" class="form-control" @bind-Value="NuevoCliente.Nit" />
+                    <ValidationMessage For="@(() => NuevoCliente.Nit)" />
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group mb-3">
+                    <label for="nombre">Nombre:</label>
+                    <InputText id="nombre" class="form-control" @bind-Value="NuevoCliente.Nombre" />
+                    <ValidationMessage For="@(() => NuevoCliente.Nombre)" />
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group mb-3">
+                    <label for="apellido">Apellido:</label>
+                    <InputText id="apellido" class="form-control" @bind-Value="NuevoCliente.Apellido" />
+                    <ValidationMessage For="@(() => NuevoCliente.Apellido)" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <button type="submit" class="btn btn-primary" disabled="@isProcessing">
+        @if (isProcessing)
+        {
+            <span class="spinner-border spinner-border-sm me-1"></span>
+            <span>Guardando...</span>
+        }
+        else
+        {
+            <span>Guardar Cliente</span>
+        }
+    </button>
+
+    <a href="/clientes-listar" class="btn btn-secondary ms-2">Ver Listado</a>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(mensajeExito))
+{
+    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+        @mensajeExito
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(mensajeError))
+{
+    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+        @mensajeError
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@code {
+    private Clients NuevoCliente = new Clients();
+    private bool isProcessing = false;
+    private string mensajeExito = string.Empty;
+    private string mensajeError = string.Empty;
+
+    private async Task HandleValidSubmit()
+    {
+        isProcessing = true;
+        mensajeExito = string.Empty;
+        mensajeError = string.Empty;
+
+        try
+        {
+            // Verificar si el NIT ya existe
+            var clientesExistentes = ClienteService.Leer();
+            if (clientesExistentes.Any(c => c.Nit == NuevoCliente.Nit))
+            {
+                mensajeError = $"Ya existe un cliente con el NIT {NuevoCliente.Nit}";
+                return;
+            }
+
+            ClienteService.Guardar(NuevoCliente);
+            mensajeExito = $"Cliente {NuevoCliente.Nombre} {NuevoCliente.Apellido} registrado exitosamente";
+
+            // Limpiar formulario después de guardar exitosamente
+            NuevoCliente = new Clients();
+
+            //Redirigir al listado después de 2 segundos, esto es opcional
+            await Task.Delay(2000);
+            Navigation.NavigateTo("/clientes-listar");
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error al guardar el cliente: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+}
