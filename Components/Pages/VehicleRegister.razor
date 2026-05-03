@@ -1,1 +1,117 @@
-﻿
+﻿@page "/vehiculos-ingreso"
+
+@using ClientServices.Model
+@using ClientServices.Services
+
+@inject VehicleService VehicleService
+
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+
+<h3>Registrar Nuevo Vehículo</h3>
+
+<EditForm Model="@NuevoVehiculo" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary class="text-danger" />
+
+    <div class="container text-center">
+        <div class="row">
+            <div class="col">
+                <div class="form-group mb-3">
+                    <label for="placa">Placa: P-</label>
+                    <InputText id="placa" class="form-control" @bind-Value="NuevoVehiculo.Plate" />
+                    <ValidationMessage For="@(() => NuevoVehiculo.Plate)" />
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group mb-3">
+                    <label for="marca">Marca:</label>
+                    <InputText id="marca" class="form-control" @bind-Value="NuevoVehiculo.Manufacturer" />
+                    <ValidationMessage For="@(() => NuevoVehiculo.Manufacturer)" />
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group mb-3">
+                    <label for="kilometraje">Kilometraje:</label>
+                    <InputText id="kilometraje" class="form-control" @bind-Value="NuevoVehiculo.Milage" />
+                    <ValidationMessage For="@(() => NuevoVehiculo.Milage)" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <button type="submit" class="btn btn-primary" disabled="@isProcessing">
+        @if (isProcessing)
+        {
+            <span class="spinner-border spinner-border-sm me-1"></span>
+            <span>Guardando...</span>
+        }
+        else
+        {
+            <span>Guardar Vehículo</span>
+        }
+    </button>
+
+    <a href="/vehiculos-listar" class="btn btn-secondary ms-2">Ver Listado</a>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(mensajeExito))
+{
+    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+        @mensajeExito
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(mensajeError))
+{
+    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+        @mensajeError
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@code {
+    private Vehicle NuevoVehiculo = new Vehicle();
+    private bool isProcessing = false;
+    private string mensajeExito = string.Empty;
+    private string mensajeError = string.Empty;
+
+    private async Task HandleValidSubmit()
+    {
+        isProcessing = true;
+        mensajeExito = string.Empty;
+        mensajeError = string.Empty;
+
+        try
+        {
+            // Verificar si el NIT ya existe
+            var vehiculosExistentes = VehicleService.Leer();
+            if (vehiculosExistentes.Any(c => c.Plate == NuevoVehiculo.Plate))
+            {
+                mensajeError = $"Ya existe un vehículo con placa {NuevoVehiculo.Plate}";
+                return;
+            }
+
+            VehicleService.Guardar(NuevoVehiculo);
+            mensajeExito = $"Vehiculo {NuevoVehiculo.Manufacturer} {NuevoVehiculo.Plate} registrado exitosamente";
+
+            // Limpiar formulario después de guardar exitosamente
+            NuevoVehiculo = new Vehicle();
+
+            //Redirigir al listado después de 2 segundos, esto es opcional
+            await Task.Delay(2000);
+            Navigation.NavigateTo("/vehiculos-listar");
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error al guardar el cliente: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+}

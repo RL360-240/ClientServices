@@ -1,0 +1,52 @@
+﻿@page "/vehiculos-listar"
+@using ClientServices.Model
+@using ClientServices.Services
+
+@* Como en la carpeta Services podemos tener varios servicios,
+   le debemos decir cual de esos servicios vamos a utilizar, este proceso se llama
+   injectar la dependencia
+*@
+@inject VehicleService VehiclesServices
+
+<PageTitle>Vehiculos</PageTitle>
+
+<h1>Vehiculos</h1>
+
+<p>Vehiculos existentes.</p>
+
+@if (vehicles == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th aria-label="Plate Vehicle">Placa</th>
+                <th aria-label="Manufacturer Vehicle">Marca</th>
+                <th aria-label="Milage Vehicle">Kilometraje</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var vehicle in vehicles)
+            {
+                <tr>
+                    <td>@vehicle.Plate</td>
+                    <td>@vehicle.Manufacturer</td>
+                    <td>@vehicle.Milage</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+
+    List<Vehicle> vehicles = new List<Vehicle>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        vehicles = VehiclesServices.Leer();
+    }
+}
